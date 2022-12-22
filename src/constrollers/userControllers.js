@@ -13,3 +13,24 @@ export async function postSignUp(req, res) {
     res.sendStatus(400);
   }
 }
+
+export async function postSignIn(req, res) {
+  const user = req.sessionUser;
+
+  try {
+    const tokenExists = await connection.query(
+      `SELECT * FROM authentication WHERE "userId"=$1`,
+      [user.userId]
+    );
+    if (tokenExists.rows.length > 0) {
+      return res.send(tokenExists.rows[0].token);
+    }
+    await connection.query(
+      `INSERT INTO authentication ("userId", token) VALUES ($1, $2)`,
+      [user.userId, user.token]
+    );
+    return res.send(user.token);
+  } catch (error) {
+    return res.sendStatus(400);
+  }
+}
