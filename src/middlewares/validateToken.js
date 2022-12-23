@@ -9,13 +9,17 @@ export async function validateToken(req, res, next) {
   }
 
   try {
-    const session = await connection.query(`SELECT * FROM table`);
+    const session = await connection.query(
+      `SELECT * FROM authentication WHERE token=$1`,
+      [token]
+    );
     if (session.rows.length === 0) {
-      return res.sendStatus(400);
+      return res.sendStatus(401);
     }
     const userToken = session.rows[0];
     req.userId = userToken.userId;
-
+    next();
+    return;
   } catch (error) {
     return res.sendStatus(400);
   }
